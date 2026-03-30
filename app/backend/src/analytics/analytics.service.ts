@@ -10,8 +10,10 @@ import {
   MapDataQuery,
   BreakdownEntry,
   TimeframeBucket,
+  GeoJsonFeatureCollection,
 } from './dto';
 import { RedisService } from '../../cache/redis.service';
+import { PrivacyService } from './privacy.service';
 
 // export type MapDataPoint = {
 //   id: string;
@@ -95,6 +97,7 @@ export class AnalyticsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly redis: RedisService,
+    private readonly privacyService: PrivacyService,
   ) {}
 
   /**
@@ -153,6 +156,34 @@ export class AnalyticsService {
 
     await this.redis.set(cacheKey, result, CACHE_TTL_SECONDS);
     return result;
+  }
+
+  /**
+   * Return anonymized geo-coordinates formatted as GeoJSON.
+   */
+  async getMapAnonymizedData(
+    query: MapDataQuery = {},
+  ): Promise<GeoJsonFeatureCollection> {
+    const rawData = await this.getMapData(query);
+
+    const features = rawData.points.map(p => {
+      const { lat, lng } = this.privacyService.fuzzCoordinates(p.lat, p.lng);
+      const { lat: _lat, lng: _lng, ...properties } = p;
+      return {
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [lng, lat] as [number, number],
+        },
+        properties,
+      };
+    });
+
+    return {
+      type: 'FeatureCollection',
+      features,
+      computedAt: rawData.computedAt,
+    };
   }
 
   private async computeGlobalStats(

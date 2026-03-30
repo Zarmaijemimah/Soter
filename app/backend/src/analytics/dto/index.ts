@@ -35,6 +35,21 @@ export interface MapDataDto {
   computedAt: string;
 }
 
+export interface GeoJsonFeature {
+  type: 'Feature';
+  geometry: {
+    type: 'Point';
+    coordinates: [number, number]; // [lng, lat]
+  };
+  properties: Omit<MapDataPoint, 'lat' | 'lng'>;
+}
+
+export interface GeoJsonFeatureCollection {
+  type: 'FeatureCollection';
+  features: GeoJsonFeature[];
+  computedAt: string;
+}
+
 export interface GlobalStatsQuery {
   from?: string;
   to?: string;
