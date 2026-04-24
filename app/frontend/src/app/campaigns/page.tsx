@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { ExportControls } from '@/components/dashboard/ExportControls';
 import { useCampaigns, useCreateCampaign, useUpdateCampaign } from '@/hooks/useCampaigns';
@@ -262,6 +263,12 @@ export default function CampaignsPage() {
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <Link
+                      href={`/campaigns/${campaign.id}/import-recipients`}
+                      className="rounded-md border border-blue-300 px-3 py-1 text-sm text-blue-700 transition hover:bg-blue-50 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-950/30"
+                    >
+                      Import recipients
+                    </Link>
                     <button
                       type="button"
                       onClick={() => onPauseResume(campaign.id, campaign.status)}
